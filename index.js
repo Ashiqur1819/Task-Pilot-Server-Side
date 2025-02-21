@@ -25,6 +25,20 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
+    const userCollection = client.db("TaskPilotDB").collection("users");
+
+    app.get("/users", async(req, body) => {
+        const cursor = userCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+    })
+
+    app.post("/users", async(req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user)
+      res.send(result)
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
