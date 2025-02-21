@@ -26,18 +26,38 @@ async function run() {
     await client.connect();
 
     const userCollection = client.db("TaskPilotDB").collection("users");
+    const taskCollection = client.db("TaskPilotDB").collection("tasks");
 
-    app.get("/users", async(req, body) => {
+    app.get("/users", async(req, res) => {
         const cursor = userCollection.find();
         const result = await cursor.toArray();
         res.send(result);
     })
 
     app.post("/users", async(req, res) => {
-      const user = req.body;
-      const result = await userCollection.insertOne(user)
-      res.send(result)
+      const newUser = req.body;
+      const query = { email: newUser?.email };
+      const isAlreadyExist = await userCollection.findOne(query);
+      if (isAlreadyExist) {
+        return;
+      } else {
+        const result = await userCollection.insertOne(newUser);
+        res.send(result);
+      }
     })
+
+     app.get("/tasks", async (req, res) => {
+       const cursor = taskCollection.find();
+       const result = await cursor.toArray();
+       res.send(result);
+     });
+
+     app.post("/task", async(req, res) => {
+      const task = req.body;
+      const result = await taskCollection.insertOne(task)
+      res.send(result)
+     })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
